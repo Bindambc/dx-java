@@ -1,13 +1,20 @@
 package com.mercadopago.resources;
 
 import com.mercadopago.core.MPBase;
+import com.mercadopago.core.MPRequestOptions;
 import com.mercadopago.core.annotations.rest.GET;
 import com.mercadopago.core.annotations.rest.POST;
 import com.mercadopago.core.annotations.rest.PUT;
 import com.mercadopago.core.annotations.validation.NotNull;
 import com.mercadopago.core.annotations.validation.Size;
 import com.mercadopago.exceptions.MPException;
-import com.mercadopago.resources.datastructures.preference.*;
+import com.mercadopago.resources.datastructures.preference.BackUrls;
+import com.mercadopago.resources.datastructures.preference.DifferentialPricing;
+import com.mercadopago.resources.datastructures.preference.Item;
+import com.mercadopago.resources.datastructures.preference.Payer;
+import com.mercadopago.resources.datastructures.preference.PaymentMethods;
+import com.mercadopago.resources.datastructures.preference.Shipments;
+import com.mercadopago.resources.datastructures.preference.Tax;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,8 +28,10 @@ import java.util.Date;
  */
 public class Preference extends MPBase {
 
-    @NotNull private ArrayList<Item> items = null;
-    @NotNull private Payer payer = null;
+    @NotNull
+    private ArrayList<Item> items = null;
+    @NotNull
+    private Payer payer = null;
     private PaymentMethods paymentMethods = null;
     private Shipments shipments = null;
     private BackUrls backUrls = null;
@@ -60,6 +69,7 @@ public class Preference extends MPBase {
     }
     private ArrayList<ProcessingMode> processingModes = null;
     private Boolean binaryMode = null;
+    private ArrayList<Tax> taxes = null;
 
     public ArrayList<Item> getItems() {
         return items;
@@ -266,23 +276,50 @@ public class Preference extends MPBase {
         return this;
     }
 
+    public ArrayList<Tax> getTaxes() { return this.taxes; }
+
+    public Preference setTaxes(ArrayList<Tax> taxes) {
+        this.taxes = taxes;
+        return this;
+    }
+
+    public Preference appendTax(Tax tax) {
+        if (this.taxes == null) {
+            this.taxes = new ArrayList<>();
+        }
+        this.taxes.add(tax);
+        return this;
+    }
+
     public static Preference findById(String id) throws MPException {
         return findById(id, WITHOUT_CACHE);
     }
 
-    @GET(path="/checkout/preferences/:id")
     public static Preference findById(String id, Boolean useCache) throws MPException {
-        return Preference.processMethod(Preference.class, "findById", id, useCache);
+        return findById(id, useCache, MPRequestOptions.createDefault());
+    }
+
+    @GET(path="/checkout/preferences/:id")
+    public static Preference findById(String id, Boolean useCache, MPRequestOptions requestOptions) throws MPException {
+        return processMethod(Preference.class, "findById", useCache, requestOptions, id);
+    }
+
+    public Preference save() throws MPException {
+        return save(MPRequestOptions.createDefault());
     }
 
     @POST(path="/checkout/preferences")
-    public Preference save() throws MPException {
-        return super.processMethod("save", WITHOUT_CACHE);
+    public Preference save(MPRequestOptions requestOptions) throws MPException {
+        return processMethod("save", WITHOUT_CACHE, requestOptions);
+    }
+
+    public Preference update() throws MPException {
+        return update(MPRequestOptions.createDefault());
     }
 
     @PUT(path="/checkout/preferences/:id")
-    public Preference update() throws MPException {
-        return super.processMethod("update", WITHOUT_CACHE);
+    public Preference update(MPRequestOptions requestOptions) throws MPException {
+        return processMethod("update", WITHOUT_CACHE, requestOptions);
     }
 
 }
